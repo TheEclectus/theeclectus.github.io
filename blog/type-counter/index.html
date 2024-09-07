@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="generator" content="LuaWebGen 1.5.0">
+
+		<title>
+			C++ Tricks: Type Counter Pattern - theeclectus.com
+		</title>
+
+		<link rel="canonical" href="https://blog.theeclectus.com/blog/type-counter/">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+		<style>
+			pre > code {
+				font-size: 16px;
+			}
+		</style>
+
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/hybrid.css">
+		<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+		<script>hljs.highlightAll();</script>
+	</head>
+
+	<body>
+		<header class="container">
+			<nav>
+				<ul>
+					<li><strong>theeclectus.com</strong></li>
+					<li>2024-09-06</li>
+				</ul>
+				<ul>
+					<li><a href="/projects">Projects</a></li>
+					<li><a href="/">Blog</a></li>
+					<li><a href="/about">About</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main class="container">
+			<hgroup>
+				<h1>C++ Tricks: Type Counter Pattern</h1>
+
+					<p>2024-09-06</p>
+
+			</hgroup>
+			<p>There occasionally arises a need to count C++ types in a dynamic way instead of values.</p>
+<p>Let me explain: lets say you&apos;re architecting a plugin system for your application, where users can extend a base <code>Plugin</code> class. Your core implementation needs to store some metadata about each class inheriting from <code>Plugin</code> registered to your plugin manager:</p>
+<pre><code class="language-cpp">class Plugin { /* ... */ };
+
+class PluginManager
+{
+	// ...
+
+	template&lt;typename T&gt;
+	static void Register()
+	{
+		if constexpr(std::is_base_of&lt;Plugin, T&gt;())
+		{
+			// ...
+			// Registration and metadata logic
+			// ...
+		}
+	}
+};
+</code></pre>
+<p>You would need some way to store the results of whatever operations you perform on the plugin. Directly indexing a type isn&apos;t possible in C++, and using RTTI through the <code>typeid</code> operator (and <code>std::type_index</code>) would preclude using an <code>std::vector</code> to iterate through the registered types. How, then, do you proceed?</p>
+<p>Below is a snippet of code representing an idea that&apos;s echoed through many of my personal projects that I affectinately call <strong>the type counter pattern</strong>:</p>
+<pre><code class="language-cpp">class TypeCounter
+{
+private:
+	static size_t _count;
+
+public:
+	template&lt;typename T&gt;
+	static constexpr size_t value()
+	{
+		static size_t val = _count++;
+		return val;
+	}
+};
+</code></pre>
+<p>It is guaranteed to create a linear, and thus unique, sequence of numbers starting from 0 (or from whatever base value is deemed appropriate), making it perfect for generating unique identifiers for types, and unlike <code>std::type_index</code> or <code>std::type_info::hash_code</code> it allows these IDs to be used as lookups in non-associative containers, and even plain C-style arrays (<strong>gasp!</strong>). Using it is very simple:</p>
+<pre><code class="language-cpp">std::cout &lt;&lt; TypeCounter::value&lt;MyPlugin&gt;() &lt;&lt; std::endl;		// 0
+std::cout &lt;&lt; TypeCounter::value&lt;MyOtherPlugin&gt;() &lt;&lt; std::endl;	// 1
+std::cout &lt;&lt; TypeCounter::value&lt;MyPlugin&gt;() &lt;&lt; std::endl;		// 0, again!
+</code></pre>
+<p>Following the <code>Plugin</code> example to its conclusion, <code>TypeCounter</code> could be used to retrieve the index of an <code>std::vector</code> containing the metadata of an already-registered <code>Plugin</code> child class -- or, if the value returned by <code>TypeCounter</code> is greater than or equal to the vector&apos;s <code>.size()</code>, an assertion could be triggered or an exception thrown.</p>
+<p>Another nicety about the type counter pattern is that, in addition to being legitimately useful, it also serves as an easy-to-digest stepping stone for introducing others to the diea of template metaprogramming. Compared to some of the more, uh, <em>verbose</em> black magic that can be invoked through templates, <code>TypeCounter</code> tastefully illustrates the dance of C++ concepts at play that enable it: the <code>static</code> keyword does most of the heavy lifting, first providing the <code>_count</code> member variable that is not bound to a specific instance of <code>TypeCounter</code>. Then, <code>static</code> in the <a href="https://en.cppreference.com/w/cpp/language/storage_duration#Static_local_variables">block-scope storage form</a> causes <code>val</code> to be initialized to the incremented value of <code>_count</code>, which takes place the first time control passes through the declaration -- and because a templated function is instantiated once per unique value of its template parameters, a unique <code>val</code> will be initialized for each <code>T</code> and returned with each subsequent call to <code>value()</code>.</p>
+
+		</main>
+	</body>
+</html>
