@@ -1,0 +1,8 @@
+pre > code {
+	font-size: 16px;
+}
+
+code {
+	line-height: 1em;
+	padding: .2rem;
+}
