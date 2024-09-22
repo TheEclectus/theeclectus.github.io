@@ -20,6 +20,26 @@
 				padding: .2rem;
 				line-height: 1em;
 			}
+
+			.sidebar-container {
+				display: flex;
+			}
+
+			.sidebar-container-main {
+				flex: 1;
+			}
+
+			article.sidebar {
+				flex: 0;
+				min-width: 20rem;
+				margin-left: 4rem;
+				height: fit-content;
+				border: 1px solid white;
+			}
+
+			article.sidebar > h4 {
+				margin-bottom: 0.25rem;
+			}
 		</style>
 
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/hybrid.css">
@@ -35,8 +55,8 @@
 					<li><strong>theeclectus.com</strong></li>
 				</ul>
 				<ul>
-					<li><a href="/projects">Projects</a></li>
 					<li><a href="/">Blog</a></li>
+					<li><a href="/projects">Projects</a></li>
 					<li><a href="/about">About</a></li>
 				</ul>
 			</nav>
@@ -48,6 +68,11 @@
 
 			</hgroup>
 			<div class="grid">
+
+	<article>
+		<h3><a href="https://theeclectus.com/projects/hddr/">Weekend Project: HD2 Stratagem Game</a></h3>
+		<p>The Dance Dance Revolution mechanics of Helldivers 2 implemented in React</p>
+	</article>
 
 	<article>
 		<h3><a href="https://theeclectus.com/projects/c-wasm/">C99 WASM Compiler</a></h3>

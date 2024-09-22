@@ -20,6 +20,26 @@
 				padding: .2rem;
 				line-height: 1em;
 			}
+
+			.sidebar-container {
+				display: flex;
+			}
+
+			.sidebar-container-main {
+				flex: 1;
+			}
+
+			article.sidebar {
+				flex: 0;
+				min-width: 20rem;
+				margin-left: 4rem;
+				height: fit-content;
+				border: 1px solid white;
+			}
+
+			article.sidebar > h4 {
+				margin-bottom: 0.25rem;
+			}
 		</style>
 
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/hybrid.css">
@@ -35,8 +55,8 @@
 					<li><strong>theeclectus.com</strong></li>
 				</ul>
 				<ul>
-					<li><a href="/projects">Projects</a></li>
 					<li><a href="/">Blog</a></li>
+					<li><a href="/projects">Projects</a></li>
 					<li><a href="/about">About</a></li>
 				</ul>
 			</nav>
@@ -47,13 +67,41 @@
 				<h1>Blog Index</h1>
 
 			</hgroup>
-			<article>
-	<hgroup>
-		<h3><a href="https://theeclectus.com/blog/type-counter/">C++ Tricks: Type Counter Pattern</a></h3>
-		<p>2024-09-06
-	</hgroup>
-	<p>An easy template pattern for counting typenames.</p>
-</article>
+			<div class="sidebar-container">
+	<div class="sidebar-container-main">
+
+		<article>
+			<hgroup>
+				<h3><a href="https://theeclectus.com/blog/hddr/">New Project: HD2 Stratagem Game</a></h3>
+				<p>2024-09-22
+			</hgroup>
+			<p>A weekend project inspired a fun game mechanic.</p>
+		</article>
+
+		<article>
+			<hgroup>
+				<h3><a href="https://theeclectus.com/blog/type-counter/">C++ Tricks: Type Counter Pattern</a></h3>
+				<p>2024-09-06
+			</hgroup>
+			<p>An easy template pattern for counting typenames.</p>
+		</article>
+
+	</div>
+
+	<article class="sidebar">
+		<h4>Archive</h4>
+
+			<div> 2024-09 </div>
+				<ul>
+
+					<li><a href="https://theeclectus.com/blog/hddr/">New Project: HD2 Stratagem Game</a></li>
+
+					<li><a href="https://theeclectus.com/blog/type-counter/">C++ Tricks: Type Counter Pattern</a></li>
+
+				</ul>
+
+	</article>
+</div>
 
 		</main>
 	</body>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="generator" content="LuaWebGen 1.5.0">
+
+		<title>
+			Weekend Project: HD2 Stratagem Game - theeclectus.com
+		</title>
+
+		<link rel="canonical" href="https://theeclectus.com/projects/hddr/">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+		<style>
+			pre > code {
+				font-size: 16px;
+			}
+
+			code {
+				padding: .2rem;
+				line-height: 1em;
+			}
+
+			.sidebar-container {
+				display: flex;
+			}
+
+			.sidebar-container-main {
+				flex: 1;
+			}
+
+			article.sidebar {
+				flex: 0;
+				min-width: 20rem;
+				margin-left: 4rem;
+				height: fit-content;
+				border: 1px solid white;
+			}
+
+			article.sidebar > h4 {
+				margin-bottom: 0.25rem;
+			}
+		</style>
+
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/hybrid.css">
+		<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2ae8b924fbdc4ff5a776a9f19a1ad31b"}'></script><!-- End Cloudflare Web Analytics -->
+		<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+		<script>hljs.highlightAll();</script>
+	</head>
+
+	<body>
+		<header class="container">
+			<nav>
+				<ul>
+					<li><strong>theeclectus.com</strong></li>
+				</ul>
+				<ul>
+					<li><a href="/">Blog</a></li>
+					<li><a href="/projects">Projects</a></li>
+					<li><a href="/about">About</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main class="container">
+			<hgroup>
+				<h1>Weekend Project: HD2 Stratagem Game</h1>
+
+			</hgroup>
+			<p style="text-align: center;">
+	<img src="screenshot.png"></img>
+</p>
+<h2 id="give-it-a-try">Give it a try!</h2>
+<p>You can find the minigame online <a href="/run/StratagemRevolution/">here</a>, or find the source code in its <a href="https://github.com/TheEclectus/HDDR">GitHub repository</a>.</p>
+<h2 id="about">About</h2>
+<p>&quot;Stratagem Hero&quot; was obviously already taken, so &quot;Stratagem Revolution&quot; (like Dance Dance Revolution, but unfamthomably dumber and less inspired) it is. I was originally going to call it HellDDvR, but that was a bit of a stretch.</p>
+<p>My girlfriend and I have been playing a lot of Helldivers 2 lately, and she found a site listing the directional codes for all the in-game stratagems. More than that, though, there was an interactive widget that let her enter the sequence for any given stratagem, like a low-stress practice run.</p>
+<p>So of course my first thought was, &quot;huh, I bet I could make something like that&quot;. This project represents the cumulative few hours of work I put into that whim, and was a good exercise for making a React application that involved CSS animations and assets in need of preloading.</p>
+<h2 id="technical-decisions">Technical Decisions</h2>
+<ul>
+<li>The stack is TypeScript, React, and Bun (exclusively for its TS compiler/bundler, no host is necessary to play).</li>
+<li>No postprocessed CSS.</li>
+<li>There are no remote resources to fetch; all available stratagems are configured as a list of objects in the source.</li>
+<li>Mobile/responsive layouts weren&apos;t a consideration, considering four arrow keys/WASD are needed. The assumption is you&apos;ll be playing on a 1920x1080 screen, however it can be comfortably played at resolutions down to around 950x640.</li>
+<li>Caching of assets (.svg and .png) files is accomplished by <code>await</code>ing the loading of <code>HTMLImageElement</code>s with a <code>src</code> attributes pointing toward each one.</li>
+</ul>
+
+		</main>
+	</body>
+</html>
