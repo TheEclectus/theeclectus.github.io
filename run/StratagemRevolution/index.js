@@ -23796,7 +23796,7 @@ var RawInGameStratagems = [
   { name: "Eagle Napalm Airstrike", code: "urdr", icon: "Eagle Napalm Airstrike.svg" },
   { name: "Eagle Smoke Strike", code: "urdr", icon: "Eagle Smoke Strike.svg" },
   { name: "Eagle 110MM Rocket Pods", code: "urul", icon: "Eagle 110MM Rocket Pods.svg" },
-  { name: "Eagle 500kg Bomb", code: "urddd", icon: "Eagle 500kg Bomb.svg" }
+  { name: "Eagle 500kg Bomb", code: "urddd", icon: "Eagle 500KG Bomb.svg" }
 ];
 document.addEventListener("DOMContentLoaded", async () => {
   await LoadIcons();
