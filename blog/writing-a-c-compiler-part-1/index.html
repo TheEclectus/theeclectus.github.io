@@ -138,7 +138,6 @@ There will also be expressions for control flow, type definitions, function decl
 <p>In the real world, there&apos;s a tremendous amount of work that happens between step 2 and 3 related to intermediate representations (a sort of compiler-specific bytecode meant to represent input source code in a uniform way) and the varying rounds of universal, hardware-specific and platform-specific optimizations done before the final, resulting output is generated.</p>
 <p>For a proof-of-concept, aiming for aggressive optimizations done on an IR would be overkill; just getting from &quot;C source input&quot; to &quot;WASM text output&quot; will suffice.</p>
 <h2 id="roadmap">Roadmap</h2>
-<p>TODO: Describe how the idea is to support an extremely minimal Hello World program, and support the smallest possible subset of the C language to make that happen.</p>
 <p>The immediate goal of this project will be to support defining a very simple <code>add()</code> function, whose behavior will then be translated into the WebAssembly text format, and accompanied by a generated JavaScript file telling the browser how to interact with it:</p>
 <pre><code class="language-cpp">int add(int a, int b)
 {
