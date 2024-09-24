@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="generator" content="LuaWebGen 1.5.0">
+
+		<title>
+			Writing a C Compiler (Part 1): Theory and Setup - theeclectus.com
+		</title>
+
+		<link rel="canonical" href="https://theeclectus.com/blog/writing-a-c-compiler-part-1/">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+		<style>
+			pre > code {
+				font-size: 16px;
+			}
+
+			code {
+				padding: .2rem;
+				line-height: 1em;
+			}
+
+			.sidebar-container {
+				display: flex;
+			}
+
+			.sidebar-container-main {
+				flex: 1;
+			}
+
+			article.sidebar {
+				flex: 0;
+				min-width: 20rem;
+				margin-left: 4rem;
+				height: fit-content;
+				border: 1px solid white;
+			}
+
+			article.sidebar > h4 {
+				margin-bottom: 0.25rem;
+			}
+
+			div.center-img {
+				text-align: center;
+			}
+
+			@media (min-width:768px) {
+			  .container {
+				max-width:500px
+			  }
+			}
+			@media (min-width:1024px) {
+			  .container {
+				max-width:700px
+			  }
+			}
+			@media (min-width:1280px) {
+			  .container {
+				max-width:800px
+			  }
+			}
+			@media (min-width:1536px) {
+			  .container {
+				max-width:1000px
+			  }
+			}
+		</style>
+
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/hybrid.css">
+		<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2ae8b924fbdc4ff5a776a9f19a1ad31b"}'></script><!-- End Cloudflare Web Analytics -->
+		<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+		<script>hljs.highlightAll();</script>
+	</head>
+
+	<body>
+		<header class="container">
+			<nav>
+				<ul>
+					<li><strong>theeclectus.com</strong></li>
+				</ul>
+				<ul>
+					<li><a href="/">Blog</a></li>
+					<li><a href="/projects">Projects</a></li>
+					<li><a href="/about">About</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main class="container">
+			<hgroup>
+				<h1>Writing a C Compiler (Part 1): Theory and Setup</h1>
+
+					<p>2024-09-06</p>
+
+			</hgroup>
+			<h2 id="inspiration">Inspiration</h2>
+<p>I want to preface this effort by acknowledging the <a href="https://bellard.org/tcc/">Tiny C Compiler</a> project by Fabrice Bellard (which doubtlessly inspired this project).</p>
+<p>The world is replete with C-family lexers, parsers, tokenizers, compilers, interpreters, and transpilers; it&apos;s the <em>lingua franca</em> of the digital world in more ways than one, and permeates every corner of the globe. Most high-level languages need to &quot;speak&quot; C to exploit native libraries, access system resources, for FFI compatibility, etc.</p>
+<p>So, why retread such well-trodden ground?</p>
+<h2 id="why-a-c-compiler">Why a C Compiler?</h2>
+<p>Why not? It seems like a fun, enriching exercise.</p>
+<p>A more technical explanation is mostly because C is syntactically an uncomplicated language that I&apos;m already familiar and comfortable with. With a short list of keywords, a simple grammar that can comfortably tuck into the annex of the <a href="https://www.open-std.org/JTC1/SC22/WG14/www/docs/n1256.pdf">standard document</a> (Annex A), and practically no cooked-in corner cases, it&apos;s practically begging to be an aspiring compiler dev&apos;s first language. Plus, a C compiler being nothing new means there&apos;s a lot of prior art to borrow from if need be, as well as several impressive <a href="https://github.com/c-testsuite/c-testsuite/">batteries of tests</a> to validate well-known language behaviors, meaning there&apos;s very little guesswork to be done about whether some feature was implemented correctly or not.</p>
+<p>I&apos;ve heard it said that reading the standard (or design document, or manual, or whatever tome describes the implementation details) for a language is the only real way to fully &apos;get&apos; it. After all, what better way to know how to fully exploit your language of choice than to know <em>exactly</em> what building blocks are available to you to rearrange? Just slogging through hundreds of pages of technical information makes for a tedious task without some way to apply it -- not unlike joylessly memorizing the formulas and theorems needed to pass highschool calculus, taught as pure mathematics divorced from a suitable, real-world context like physics. I enjoy application holding hands with theory, so I want to take the opportunity to <em>make</em> something with it.</p>
+<h2 id="why-webassembly">Why WebAssembly?</h2>
+<p>WebAssembly (or WASM), to me, represents a fascinating evolution in the universal-web-platform ecosystem; instead of relying exclusively on JavaScript to describe logical processes, they can instead be described in a much lower-level, assembly-like syntax for a stack-based virtual machine, meaning control flow much closer to a traditional computer program. Because web standards are implemented in a (fairly) homogenous ecosystem, this means that assembly-like code can be executed almost anywhere -- which isn&apos;t a new concept by itself, considering that portable bytecodes like those of Lua or Python, have existed for decades, but is nonetheless exciting because of the ubiquity of web browsers, meaning no extra software or expertise is needed to take advantage of WebAssembly.</p>
+<p>Besides being an exciting new way to make and distribute software, WASM&apos;s syntax is also fairly straightforward, and is described in wonderful detail in <a href="https://developer.mozilla.org/en-US/docs/WebAssembly/Understanding_the_text_format">Mozilla&apos;s developer documents</a>.</p>
+<h2 id="high-level-goals">High-Level Goals</h2>
+<p>This project has the following parameters and goals:</p>
+<ul>
+<li>The compiler&apos;s <em>input</em> will be one or more <strong>C99-compliant C source code (*.c)</strong> files.</li>
+<li>The compiler&apos;s <em>output</em> will be one or more <strong>WebAssembly text format (*.wat)</strong> files, and the necessary <strong>JavaScript (*.js)</strong> boilerplate needed to load and execute the generated WASM.
+<ul>
+<li>As a future goal, adding the option to output directly to <strong>WebAssembly binary format (*.wasm)</strong> files would be a logical step.</li>
+</ul>
+</li>
+<li>The compiler will use the tests from <a href="https://github.com/c-testsuite/c-testsuite/">c-testsuite</a> to test for adherence, and include the necessary configurations to run them.</li>
+</ul>
+<h2 id="the-compilation-process">The Compilation Process</h2>
+<p>The thousand-foot abstract of a compiler is that it takes some high-level structured information (source code) and transforms it into some other representation, traditionally into low-level machine code that a computer can make direct use of. In my case, WebAssembly is the target.</p>
+<p>So, what then are the steps needed to transform source code into its output format?</p>
+<div class="center-img">
+	<div><img src="../../img/c_to_wasm.png" /></div>
+	<small>How does one get from the left to the right?</small>
+</div>
+<p>The entire process can be (<strong>VERY</strong>) briefly summarized as:</p>
+<ol>
+<li><strong>Tokenize</strong> the input; that is, split the input source into a series of <strong>tokens</strong>, chopping up the stream of characters into meaningful parts like keywords (<code>struct</code>, <code>int</code>, etc.), symbols (<code>%</code>, <code>#</code>, <code>!</code>, etc.), strings (<code>&quot;test&quot;</code>), and so on.</li>
+<li><strong>Parse</strong> the token sequence, matching them against the logical structures defined by the language. For instance, a naive assignment expression might look like this:<pre><code>	foo		=	22
+	IDENTIFIER	SYMBOL	LITERAL
+</code></pre>
+There will also be expressions for control flow, type definitions, function declarations, etc. A sequence of these expressions forms the logical basis for a program, and provide the data upon which to operate.</li>
+<li><strong>Generate</strong> the sequence of instructions in the destination format that reflects the instructions of the input language.</li>
+</ol>
+<p>In the real world, there&apos;s a tremendous amount of work that happens between step 2 and 3 related to intermediate representations (a sort of compiler-specific bytecode meant to represent input source code in a uniform way) and the varying rounds of universal, hardware-specific and platform-specific optimizations done before the final, resulting output is generated.</p>
+<p>For a proof-of-concept, aiming for aggressive optimizations done on an IR would be overkill; just getting from &quot;C source input&quot; to &quot;WASM text output&quot; will suffice.</p>
+<h2 id="roadmap">Roadmap</h2>
+<p>TODO: Describe how the idea is to support an extremely minimal Hello World program, and support the smallest possible subset of the C language to make that happen.</p>
+<p>The immediate goal of this project will be to support defining a very simple <code>add()</code> function, whose behavior will then be translated into the WebAssembly text format, and accompanied by a generated JavaScript file telling the browser how to interact with it:</p>
+<pre><code class="language-cpp">int add(int a, int b)
+{
+	return a + b;
+}
+</code></pre>
+<p>To accomplish this, the following are required:</p>
+<ol>
+<li><strong>A complete tokenizer</strong> - The C99 standard only specifies 5 distinct kinds of tokens, might as well get them all out of the way at the same time.</li>
+<li><strong>A minimal parser</strong> - I just want to adhere to the standard enough to define a function with some primitive, non-pointer, non-reference parameters.</li>
+<li><strong>A minimal generator</strong> - As above, implement just enough of the language to do some basic arithmetic and return a value.</li>
+</ol>
+<h2 id="next-time">Next Time</h2>
+<p>In my next post, I&apos;ll be discussing the C99 language standard (draft), as well as how I&apos;ve chosen to implement the tokenizer.</p>
+
+		</main>
+	</body>
+</html>
